@@ -1,52 +1,73 @@
 package ru.otus.l021.memory;
 
-import ru.otus.l021.memory.factory.Abstract;
-import ru.otus.l021.memory.factory.Class1;
-import ru.otus.l021.memory.factory.Class2;
-import ru.otus.l021.memory.factory.Class3;
-
-import java.lang.management.ManagementFactory;
+import java.util.function.Supplier;
 
 @SuppressWarnings({"RedundantStringConstructorCall", "InfiniteLoopStatement"})
 public class Main {
-    public static void main(String... args) throws InterruptedException {
-//        init(new Class1());
-//        init(new Class2());
-        init(new Class3());
+    public static void main(String... args) {
+       Factory.getSize(Object::new);
+       Factory.getSize(() -> new String(""));
+       Factory.getSize(() -> new String(new char[0]));
+       Factory.getSize(() -> new byte[0]);
+       Factory.getSize(MyClass::new);
+       Factory.getSize(() -> 666);
+       Factory.getSize(() -> 555L);
     }
 
-    private static void init(Abstract obj) throws InterruptedException {
-        System.out.println("pid: " + ManagementFactory.getRuntimeMXBean().getName());
-        int size = 20_000_000;
-        System.out.println("Начало цикла");
-
-        while (true) {
-            long mem = getMemory();
-            System.out.println("Общее количество памяти: " + mem);
-
-            Object[] array = new Object[size];
-
-            long mem2 = getMemory();
-            System.out.println("Размер пустого массива: " + (mem2 - mem) / array.length);
-
-            for (int i = 0; i < array.length; i++) {
-                array[i] = obj.getInstance();
-            }
-
-            long mem3 = getMemory();
-            System.out.println("Размер элемента: " + (mem3 - mem2) / array.length);
-
-            array = null;
-            System.out.println("Массив готов к сбору сборщиком мусора");
-            System.out.println("--------------------------------------");
-            Thread.sleep(1000);
-        }
-    }
-
-    private static long getMemory() throws InterruptedException {
+    static long getMemory() {
         System.gc();
-        Thread.sleep(10);
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         Runtime runtime = Runtime.getRuntime();
         return runtime.totalMemory() - runtime.freeMemory();
     }
+}
+
+class Factory {
+
+   static <T> void getSize(Supplier<T> object){
+       Object[] array;
+       int[] intArray;
+       long[] longArray;
+
+       if (object.get() instanceof Integer) {
+           long memorySizeBefore = Main.getMemory();
+           System.out.println("Размер памяти до создания массива int: " + memorySizeBefore);
+           intArray = new int[20000000];
+           for (int i = 0; i < intArray.length; i++) {
+               intArray[i] = i;
+           }
+           long elementMemorySize = (Main.getMemory() - memorySizeBefore) / intArray.length;
+           System.out.println("Размер элемента: " + elementMemorySize);
+       }
+       else if (object.get() instanceof Long) {
+           long memorySizeBefore = Main.getMemory();
+           System.out.println("Размер памяти до создания массива long: " + memorySizeBefore);
+           longArray = new long[20000000];
+           for (int i = 0; i < longArray.length; i++) {
+               longArray[i] = i;
+           }
+           long elementMemorySize = (Main.getMemory() - memorySizeBefore) / longArray.length;
+           System.out.println("Размер элемента: " + elementMemorySize);
+       }
+       else {
+           array = new Object[20000000];
+           long memorySizeBefore = Main.getMemory();
+           System.out.println("Размер памяти с пустым массивом Object: " + memorySizeBefore);
+           for (int i = 0; i < array.length; i++) {
+               array[i] = object.get();
+           }
+           long elementMemorySize = (Main.getMemory() - memorySizeBefore) / array.length;
+           System.out.println("Размер элемента: " + elementMemorySize);
+       }
+   }
+}
+
+class MyClass {
+    private byte b = 0;
+    private int i = 0;
+    private long l = 1;
 }
