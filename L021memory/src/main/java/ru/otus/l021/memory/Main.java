@@ -7,8 +7,7 @@ public class Main {
         objectSizeMeter.getObjectSize(new ObjectFactory(() -> new String()));
         objectSizeMeter.getObjectSize(new ObjectFactory(() -> new String("Hello Otus!")));
         objectSizeMeter.getObjectSize(new ObjectFactory(() -> new int[0]));
-        objectSizeMeter.getObjectSize(new ObjectFactory(() -> ));
-        objectSizeMeter.getObjectSize(new ObjectFactory(() -> ));
-
+        objectSizeMeter.getObjectSize(new ObjectFactory(() -> new String(new byte[0])));
+        objectSizeMeter.getObjectSize(new ObjectFactory(() -> new String(new char[0])));
     }
 }

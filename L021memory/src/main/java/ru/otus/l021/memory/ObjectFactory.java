@@ -16,20 +16,4 @@ class ObjectFactory<T> {
         }
         return arr;
     }
-
-    int[] getArrayOfInt() {
-        int[] intArray = new int[20000000];
-        for (int i = 0; i < intArray.length; i++) {
-            intArray[i] = i;
-        }
-        return intArray;
-    }
-
-    long[] getArrayOfLong() {
-        long[] longArray = new long[20000000];
-        for (int i = 0; i < longArray.length; i++) {
-            longArray[i] = i;
-        }
-        return longArray;
-    }
 }
