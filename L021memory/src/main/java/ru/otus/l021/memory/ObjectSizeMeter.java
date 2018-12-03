@@ -8,7 +8,7 @@ class ObjectSizeMeter {
         System.gc();
         System.out.println("Размер памяти до заполнения массива: " + memorySizeBefore);
 
-        Object[] filledArray = factory.getArrayOfObject(array);
+        Object[] filledArray = factory == null ? array : factory.getArrayOfObject(array);
 
         long elementMemorySize = (getMemory() - memorySizeBefore) / filledArray.length;
         System.out.println("Размер элемента: " + elementMemorySize);

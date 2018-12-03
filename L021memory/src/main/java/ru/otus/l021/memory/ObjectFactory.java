@@ -12,7 +12,7 @@ class ObjectFactory<T> {
 
     Object[] getArrayOfObject(Object[] arr) {
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = supplier.get();
+            arr[i] = supplier == null ? null : supplier.get();
         }
         return arr;
     }

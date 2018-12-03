@@ -9,5 +9,7 @@ public class Main {
         objectSizeMeter.getObjectSize(new ObjectFactory(() -> new int[0]));
         objectSizeMeter.getObjectSize(new ObjectFactory(() -> new String(new byte[0])));
         objectSizeMeter.getObjectSize(new ObjectFactory(() -> new String(new char[0])));
+        objectSizeMeter.getObjectSize(null);
+        objectSizeMeter.getObjectSize(new ObjectFactory<>(null));
     }
 }
