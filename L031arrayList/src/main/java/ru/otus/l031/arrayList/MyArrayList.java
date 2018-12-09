@@ -4,11 +4,13 @@ import java.util.*;
 
 public class MyArrayList<T> implements List<T> {
 
+    private static final int DEFAULT_CAPACITY = 10;
     private Object[] elementData;
     private int size;
+    private static final Object[] DEFAULT_CAPACITY_EMPTY_ELEMENT_DATA = new Object[DEFAULT_CAPACITY];
 
     public MyArrayList() {
-        this.elementData = new Object[]{};
+        this.elementData = DEFAULT_CAPACITY_EMPTY_ELEMENT_DATA;
     }
 
     @Override
@@ -42,22 +44,18 @@ public class MyArrayList<T> implements List<T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public T set(int index, T element) {
         if (index >= size)
             throw new IndexOutOfBoundsException("Индекс: " + index + ", Размер: " + size);
-        T oldValue = elementData(index);
+        T oldValue = (T) elementData[index];
         elementData[index] = element;
         return oldValue;
     }
 
-    @SuppressWarnings("unchecked")
-    private T elementData(int index) {
-        return (T) elementData[index];
-    }
-
     private void ensureCapacityInternal(int minCapacity) {
-        if (elementData == new Object[]{})
-            minCapacity = Math.max(10, minCapacity);
+        if (elementData == DEFAULT_CAPACITY_EMPTY_ELEMENT_DATA)
+            minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
 
         if (minCapacity - elementData.length > 0)
             grow(minCapacity);
@@ -134,91 +132,92 @@ public class MyArrayList<T> implements List<T> {
         }
 
         public void remove() {
+            throw new UnsupportedOperationException("Метод remove() не реализован");
         }
 
         public boolean hasPrevious() {
-            return false;
+            throw new UnsupportedOperationException("Метод hasPrevious() не реализован");
         }
 
         public int nextIndex() {
-            return 0;
+            throw new UnsupportedOperationException("Метод nextIndex() не реализован");
         }
 
         public int previousIndex() {
-            return 0;
+            throw new UnsupportedOperationException("Метод previousIndex() не реализован");
         }
 
         public T previous() {
-            return null;
+            throw new UnsupportedOperationException("Метод previous() не реализован");
         }
 
         public void add(T t) {
-
+            throw new UnsupportedOperationException("Метод add(T t) не реализован");
         }
     }
 ////////////////////////////////////////////////////////////////////////////////////////
 
     public ListIterator<T> listIterator(int index) {
-        return null;
+        throw new UnsupportedOperationException("Метод listIterator(int index) не реализован");
     }
 
     public boolean remove(Object o) {
-        return false;
+        throw new UnsupportedOperationException("Метод remove(Object o) не реализован");
     }
 
     public boolean containsAll(Collection<?> c) {
-        return false;
+        throw new UnsupportedOperationException("Метод containsAll(Collection<?> c) не реализован");
     }
 
     public boolean addAll(Collection<? extends T> c) {
-        return false;
+        throw new UnsupportedOperationException("Метод addAll(Collection<? extends T> c) не реализован");
     }
 
     public boolean addAll(int index, Collection<? extends T> c) {
-        return false;
+        throw new UnsupportedOperationException("Метод addAll(int index, Collection<? extends T> c) не реализован");
     }
 
     public boolean removeAll(Collection<?> c) {
-        return false;
+        throw new UnsupportedOperationException("Метод removeAll(Collection<?> c) не реализован");
     }
 
     public boolean retainAll(Collection<?> c) {
-        return false;
+        throw new UnsupportedOperationException("Метод retainAll(Collection<?> c) не реализован");
     }
 
     public void clear() {
-
+        throw new UnsupportedOperationException("Метод clear() не реализован");
     }
 
     public T get(int index) {
-        return null;
+        throw new UnsupportedOperationException("Метод get(int index) не реализован");
     }
 
     public void add(int index, T element) {
-
+        throw new UnsupportedOperationException("Метод add(int index, T element) не реализован");
     }
 
     public T remove(int index) {
-        return null;
+        throw new UnsupportedOperationException("Метод remove(int index) не реализован");
     }
 
     public int indexOf(Object o) {
-        return 0;
+        throw new UnsupportedOperationException("Метод indexOf(Object o) не реализован");
     }
 
     public int lastIndexOf(Object o) {
-        return 0;
+        throw new UnsupportedOperationException("Метод lastIndexOf(Object o) не реализован");
     }
 
     public List<T> subList(int fromIndex, int toIndex) {
-        return null;
+        throw new UnsupportedOperationException("Метод subList(int fromIndex, int toIndex) не реализован");
     }
 
     public boolean isEmpty() {
-        return false;
+        throw new UnsupportedOperationException("Метод isEmpty() не реализован");
     }
 
     public boolean contains(Object o) {
-        return false;
+        throw new UnsupportedOperationException("Метод contains(Object o) не реализован");
     }
 }
