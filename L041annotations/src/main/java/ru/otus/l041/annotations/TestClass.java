@@ -18,7 +18,7 @@ public class TestClass {
 
     @Test
     public void secondTest() {
-        System.out.println("Выполнен тест № 2");
+        throw new RuntimeException("Ошибка в тесте!");
     }
 
     @Test
