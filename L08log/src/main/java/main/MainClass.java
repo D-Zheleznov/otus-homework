@@ -1,3 +1,5 @@
+package main;
+
 import demo.TestLogging;
 import proxy.TestLoggingInvocationHandler;
 

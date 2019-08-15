@@ -1,19 +1,26 @@
 package proxy;
 
-import annotation.Log;
 import demo.TestLogging;
 import demo.TestLoggingImpl;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 public class TestLoggingInvocationHandler implements InvocationHandler {
 
     private TestLogging testLogging = new TestLoggingImpl();
+    private String[] annotatedMethods;
+
+    public TestLoggingInvocationHandler() {
+        annotatedMethods = Arrays.stream(TestLoggingImpl.class.getMethods())
+                                 .filter(method -> Arrays.stream(method.getDeclaredAnnotations()).anyMatch(annotation -> annotation.annotationType().getSimpleName().equals("Log")))
+                                 .map(Method::getName).toArray(String[]::new);
+    }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (!method.isAnnotationPresent(Log.class))
+        if (Arrays.stream(annotatedMethods).noneMatch(method.getName()::equals))
             return method.invoke(testLogging, args);
 
         StringBuilder params = new StringBuilder();
