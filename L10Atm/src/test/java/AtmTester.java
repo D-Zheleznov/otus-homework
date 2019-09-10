@@ -31,7 +31,7 @@ public class AtmTester {
     }
 
     /**
-     * Кейс когда зарошенную сумму невозможно выдать
+     * Кейс когда запрошенную сумму невозможно выдать
      */
     @Test
     public void testInvalidCashAmountGiveOut() {
@@ -55,7 +55,7 @@ public class AtmTester {
     }
 
     /**
-     * Кейс когда зарошенная сумма первышает остаток
+     * Кейс когда запрошенная сумма превышает остаток
      */
     @Test
     public void testInvalidCashAmountGiveOut2() {
