@@ -1,14 +1,14 @@
 package ru.otus.l10.atm;
 
-import ru.otus.l10.atm.model.Cash;
+import ru.otus.l10.atm.model.CashPack;
 
 import java.util.List;
 
 public interface Atm {
 
-    void depositCash(List<Cash> cashToDeposit);
+    void depositCash(List<CashPack> cashToDeposit);
 
-    List<Cash> cashGiveOut(Integer cashToGiveOut);
+    List<CashPack> cashGiveOut(Integer cashToGiveOut);
 
     Integer checkBalance();
 }

@@ -1,5 +1,7 @@
 package ru.otus.l10.atm.model;
 
+import java.util.Arrays;
+
 public enum Nominal {
 
     _10,
@@ -9,13 +11,7 @@ public enum Nominal {
     _1000;
 
     public static Nominal parse(Integer sum) {
-        switch (sum) {
-            case 10: return _10;
-            case 50: return _50;
-            case 100: return _100;
-            case 500: return _500;
-            case 1000: return _1000;
-            default: throw new RuntimeException("Номинал не распознан: " + sum);
-        }
+        return Arrays.stream(Nominal.values()).filter(nominal -> nominal.name().substring(1).equals(sum.toString())).findFirst()
+                .orElseThrow(() -> new RuntimeException("Номинал не распознан: " + sum));
     }
 }

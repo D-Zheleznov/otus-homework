@@ -1,12 +1,20 @@
 package ru.otus.l10.atm.model;
 
-public class Cash {
+/**
+ * Класс "Пачка банкнот"
+ * nominal - номинал банкнот
+ * amount - количество банкнот в пачке
+ */
+public class CashPack {
 
     private Nominal nominal;
     private Integer amount;
 
-    public Cash(Nominal nominal, Integer amount) {
+    public CashPack(Nominal nominal, Integer amount) {
         this.nominal = nominal;
+
+        if (amount < 0)
+            throw new RuntimeException("Количество банкнот не может быть отрицательным");
         this.amount = amount;
     }
 
@@ -16,14 +24,6 @@ public class Cash {
 
     public Integer getAmount() {
         return amount;
-    }
-
-    public void setNominal(Nominal nominal) {
-        this.nominal = nominal;
-    }
-
-    public void setAmount(Integer amount) {
-        this.amount = amount;
     }
 
     @Override
