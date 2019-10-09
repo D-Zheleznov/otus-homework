@@ -125,7 +125,10 @@ public class DbExecutorImpl<T> implements DbExecutor<T> {
     }
 
     private Field getPrimaryKey(Class<T> clazz) {
-        Set<Field> primaryKeys = Arrays.stream(clazz.getDeclaredFields()).filter(field -> Arrays.stream(field.getDeclaredAnnotations()).anyMatch(annotation -> annotation.annotationType().equals(Id.class))).collect(toSet());
+        Set<Field> primaryKeys = Arrays.stream(clazz.getDeclaredFields())
+                .filter(field -> Arrays.stream(field.getDeclaredAnnotations())
+                        .anyMatch(annotation -> annotation.annotationType().equals(Id.class)))
+                .collect(toSet());
         if (primaryKeys.size() != 1)
             throw new RuntimeException("В классе " + clazz.getSimpleName() + " должно быть одно поле помеченное ключом @Id");
         else
