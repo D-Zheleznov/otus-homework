@@ -1,137 +1,131 @@
 package ru.otus.l14.jdbc;
 
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.builder.fluent.Configurations;
+import ru.otus.l14.jdbc.annotations.Id;
+import ru.otus.l14.jdbc.exceptions.DbExecutorException;
 
-import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.sql.*;
-import java.util.Arrays;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
+import static ru.otus.l14.jdbc.SqlManager.QueryType.*;
 
 public class DbExecutorImpl<T> implements DbExecutor<T> {
 
-    @Override
-    @SuppressWarnings({"unchecked"})
-    public void create(T objectData) {
-        this.getPrimaryKey((Class<T>) objectData.getClass());
-        Set<Field> fields = Arrays.stream(objectData.getClass().getDeclaredFields()).filter(field -> Arrays.stream(field.getDeclaredAnnotations()).noneMatch(annotation -> annotation.annotationType().equals(Id.class))).collect(toSet());
+    private List<Field> fields = new ArrayList<>();
 
-        StringBuilder query = new StringBuilder();
-        query.append("INSERT INTO ").append(objectData.getClass().getSimpleName()).append(" (").append(fields.stream().map(Field::getName).collect(joining(", "))).append(") VALUES ('");
-        query.append(fields.stream().map(field -> {
-            try {
-                field.setAccessible(true);
-                return field.get(objectData).toString();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }).collect(joining("', '"))).append("')");
-        executeStatement(query.toString());
+    public static <T> DbExecutorImpl<T> of(Class<T> clazz) {
+        DbExecutorImpl<T> executor = new DbExecutorImpl<>();
+        executor.getClassFields(clazz);
+        return executor;
+    }
+
+    private DbExecutorImpl() {
     }
 
     @Override
-    @SuppressWarnings({"unchecked"})
-    public void update(T objectData) {
-        Field primaryKey = this.getPrimaryKey((Class<T>) objectData.getClass());
-        primaryKey.setAccessible(true);
-        Set<Field> fields = Arrays.stream(objectData.getClass().getDeclaredFields()).filter(field -> !field.getName().equals(primaryKey.getName())).collect(toSet());
+    public void create(T objectData) throws DbExecutorException {
+        PrimaryField primaryKey = this.getPrimaryKey(objectData);
 
-        StringBuilder query = new StringBuilder();
-        query.append("UPDATE ").append(objectData.getClass().getSimpleName()).append(" SET ");
-        fields.forEach(field -> {
-            try {
-                field.setAccessible(true);
-                query.append(field.getName()).append(" = '").append(field.get(objectData)).append("', ");
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-        try {
-            query.setLength(query.length() - 2);
-            query.append(" WHERE ").append(primaryKey.getName()).append(" = '").append(primaryKey.get(objectData)).append("'");
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        executeStatement(query.toString());
-    }
+        try (Connection connection = SqlManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SqlManager.generateQuery(INSERT, objectData.getClass().getSimpleName(), this.fields), Statement.RETURN_GENERATED_KEYS)) {
 
-    @Override
-    @SuppressWarnings({"unchecked"})
-    public void createOrUpdate(T objectData) {
-        Field primaryKey = this.getPrimaryKey((Class<T>) objectData.getClass());
-        primaryKey.setAccessible(true);
-        try {
-            if (primaryKey.get(objectData) != null)
-                this.update(objectData);
-            else
-                this.create(objectData);
+            List<Field> fieldsWithoutId = this.fields.stream().filter(field -> !field.getName().equals(primaryKey.field.getName())).collect(toList());
+            for (int i = 0; i < fieldsWithoutId.size(); i++)
+                statement.setString(i + 1, fieldsWithoutId.get(i).get(objectData).toString());
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+            statement.executeUpdate();
 
-    @Override
-    public T load(long id, Class<T> clazz) {
-        Field primaryKey = this.getPrimaryKey(clazz);
-        primaryKey.setAccessible(true);
-        StringBuilder query = new StringBuilder();
-        query.append("SELECT * FROM ").append(clazz.getSimpleName()).append(" WHERE ").append(primaryKey.getName()).append(" = '").append(id).append("'");
-        return getObjectFromQuery(query.toString(), clazz);
-    }
-
-    public static void executeStatement(String sqlQuery) {
-        try {
-            Configuration config = new Configurations().properties(new File("application.properties"));
-
-            try (Connection connection = DriverManager.getConnection(config.getString("database.url"), config.getString("database.username"), config.getString("database.password"));
-                 Statement statement = connection.createStatement()) {
-                Class.forName(config.getString("database.jdbc.driver"));
-
-                statement.execute(sqlQuery);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private T getObjectFromQuery(String sqlQuery, Class<T> clazz) {
-        try {
-            Configuration config = new Configurations().properties(new File("application.properties"));
-
-            try (Connection connection = DriverManager.getConnection(config.getString("database.url"), config.getString("database.username"), config.getString("database.password"));
-                 Statement statement = connection.createStatement()) {
-                Class.forName(config.getString("database.jdbc.driver"));
-
-                try (ResultSet resultSet = statement.executeQuery(sqlQuery)) {
-                    T object = clazz.getDeclaredConstructor().newInstance();
-                    Set<Method> setters = Arrays.stream(clazz.getMethods()).filter(method -> method.getName().startsWith("set")).collect(toSet());
-                    if (resultSet.next()) {
-                        for (Method setter : setters) {
-                            setter.invoke(object, resultSet.getObject(setter.getName().substring(3).toUpperCase()));
-                        }
-                    }
-                    return object;
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    Field declaredField = objectData.getClass().getDeclaredField(primaryKey.field.getName());
+                    declaredField.setAccessible(true);
+                    declaredField.set(objectData, generatedKeys.getObject(1));
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new DbExecutorException(e.getMessage());
         }
-        return null;
     }
 
-    private Field getPrimaryKey(Class<T> clazz) {
-        Set<Field> primaryKeys = Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> Arrays.stream(field.getDeclaredAnnotations())
-                        .anyMatch(annotation -> annotation.annotationType().equals(Id.class)))
-                .collect(toSet());
-        if (primaryKeys.size() != 1)
-            throw new RuntimeException("В классе " + clazz.getSimpleName() + " должно быть одно поле помеченное ключом @Id");
+    @Override
+    public void update(T objectData) throws DbExecutorException {
+        PrimaryField primaryKey = this.getPrimaryKey(objectData);
+
+        try (Connection connection = SqlManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SqlManager.generateQuery(UPDATE, objectData.getClass().getSimpleName(), this.fields))) {
+
+            List<Field> fieldsWithoutId = this.fields.stream().filter(field -> !field.getName().equals(primaryKey.field.getName())).collect(toList());
+            for (int i = 0; i < fieldsWithoutId.size(); i++)
+                statement.setString(i + 1, fieldsWithoutId.get(i).get(objectData).toString());
+
+            statement.setString(fieldsWithoutId.size() + 1, primaryKey.value.toString());
+
+            statement.executeUpdate();
+        } catch (Exception e) {
+            throw new DbExecutorException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void createOrUpdate(T objectData) throws DbExecutorException {
+        if (this.getPrimaryKey(objectData).value != null)
+            this.update(objectData);
         else
-            return primaryKeys.stream().findFirst().get();
+            this.create(objectData);
+    }
+
+    @Override
+    public T load(long id, Class<T> clazz) throws DbExecutorException {
+        try (Connection connection = SqlManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(SqlManager.generateQuery(SELECT, clazz.getSimpleName(), this.fields))) {
+
+            statement.setString(1, String.valueOf(id));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                T object = clazz.getDeclaredConstructor().newInstance();
+                if (resultSet.first()) {
+                    for (Field field : this.fields) {
+                        Field declaredField = object.getClass().getDeclaredField(field.getName());
+                        declaredField.setAccessible(true);
+                        declaredField.set(object, resultSet. getObject(field.getName().toUpperCase()));
+                    }
+                }
+                return object;
+            }
+        } catch (Exception e) {
+            throw new DbExecutorException(e.getMessage());
+        }
+    }
+
+    private void getClassFields(Class<T> clazz) {
+        this.fields = Arrays.stream(clazz.getDeclaredFields()).peek(field -> field.setAccessible(true)).collect(toList());
+    }
+
+    private PrimaryField getPrimaryKey(T objectData) throws DbExecutorException {
+        Supplier<Stream<Field>> primaryKeysStream = () -> this.fields.stream().filter(field -> Arrays.stream(field.getDeclaredAnnotations())
+                                                                                              .anyMatch(annotation -> annotation.annotationType().equals(Id.class)));
+        if (primaryKeysStream.get().count() == 1) {
+            try {
+                Field primaryField = primaryKeysStream.get().findFirst().get();
+                return new PrimaryField(primaryField, primaryField.get(objectData));
+            } catch (Exception e) {
+                throw new DbExecutorException(e.getMessage());
+            }
+        } else
+            throw new DbExecutorException("В классе " + objectData.getClass().getSimpleName() + " должно быть одно поле помеченное ключом @Id");
+    }
+
+    private class PrimaryField {
+
+        private Field field;
+        private Object value;
+
+        private PrimaryField(Field field, Object value) {
+            this.field = field;
+            this.value = value;
+        }
     }
 }

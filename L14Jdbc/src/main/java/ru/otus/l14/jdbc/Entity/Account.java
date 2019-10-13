@@ -1,6 +1,6 @@
 package ru.otus.l14.jdbc.Entity;
 
-import ru.otus.l14.jdbc.Id;
+import ru.otus.l14.jdbc.annotations.Id;
 
 public class Account {
 
