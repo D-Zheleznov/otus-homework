@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
-import static ru.otus.l14.jdbc.SqlManager.QueryType.*;
 
 public class DbExecutorImpl<T> implements DbExecutor<T> {
 
@@ -28,11 +27,12 @@ public class DbExecutorImpl<T> implements DbExecutor<T> {
     @Override
     public void create(T objectData) throws DbExecutorException {
         PrimaryField primaryKey = this.getPrimaryKey(objectData);
+        String sql = SqlManager.generateInsert(this.fields, primaryKey.field);
 
         try (Connection connection = SqlManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(SqlManager.generateQuery(INSERT, objectData.getClass().getSimpleName(), this.fields), Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            List<Field> fieldsWithoutId = this.fields.stream().filter(field -> !field.getName().equals(primaryKey.field.getName())).collect(toList());
+            List<Field> fieldsWithoutId = this.getFieldsWithoutId();
             for (int i = 0; i < fieldsWithoutId.size(); i++)
                 statement.setString(i + 1, fieldsWithoutId.get(i).get(objectData).toString());
 
@@ -53,11 +53,12 @@ public class DbExecutorImpl<T> implements DbExecutor<T> {
     @Override
     public void update(T objectData) throws DbExecutorException {
         PrimaryField primaryKey = this.getPrimaryKey(objectData);
+        String sql = SqlManager.generateUpdate(this.fields, primaryKey.field);
 
         try (Connection connection = SqlManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(SqlManager.generateQuery(UPDATE, objectData.getClass().getSimpleName(), this.fields))) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            List<Field> fieldsWithoutId = this.fields.stream().filter(field -> !field.getName().equals(primaryKey.field.getName())).collect(toList());
+            List<Field> fieldsWithoutId = this.getFieldsWithoutId();
             for (int i = 0; i < fieldsWithoutId.size(); i++)
                 statement.setString(i + 1, fieldsWithoutId.get(i).get(objectData).toString());
 
@@ -79,8 +80,15 @@ public class DbExecutorImpl<T> implements DbExecutor<T> {
 
     @Override
     public T load(long id, Class<T> clazz) throws DbExecutorException {
+        Field primaryKey = fields.stream().filter(field -> Arrays.stream(field.getDeclaredAnnotations())
+                                                                 .anyMatch(annotation -> annotation.annotationType().equals(Id.class)))
+                                                                 .findFirst()
+                                                                 .orElseThrow(() -> new DbExecutorException("В классе " + clazz.getSimpleName() + " должно быть одно поле помеченное ключом @Id"));
+
+        String sql = SqlManager.generateSelect(this.fields, primaryKey);
+
         try (Connection connection = SqlManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(SqlManager.generateQuery(SELECT, clazz.getSimpleName(), this.fields))) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, String.valueOf(id));
 
@@ -102,6 +110,11 @@ public class DbExecutorImpl<T> implements DbExecutor<T> {
 
     private void getClassFields(Class<T> clazz) {
         this.fields = Arrays.stream(clazz.getDeclaredFields()).peek(field -> field.setAccessible(true)).collect(toList());
+    }
+
+    private List<Field> getFieldsWithoutId() {
+        return this.fields.stream().filter(field -> Arrays.stream(field.getDeclaredAnnotations())
+                .noneMatch(annotation -> annotation.annotationType().equals(Id.class))).collect(toList());
     }
 
     private PrimaryField getPrimaryKey(T objectData) throws DbExecutorException {
