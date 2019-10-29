@@ -36,13 +36,7 @@ class JsonParser {
     static JsonComponent parseMap(Field field, Object object) throws IllegalAccessException {
         JsonObject jsonObject = new JsonObject();
         jsonObject.setObjectName(field.getName());
-
-        ((Map) field.get(object)).forEach((key, value) -> {
-
-            //проверка
-
-            jsonObject.getJsonComponents().add(new JsonElement(JsonObjectWriter.toJsonObject(key).asJsonString(), JsonObjectWriter.toJsonObject(value).asJsonString()));
-        });
+        ((Map) field.get(object)).forEach((key, value) -> jsonObject.getJsonComponents().add(new JsonElement(key.toString(), value.toString())));
         return jsonObject;
     }
 

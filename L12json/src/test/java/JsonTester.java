@@ -15,24 +15,18 @@ public class JsonTester {
     @Test
     public void jsonTest() {
         Pojo object = new Pojo();
-//        object.setInteger(5);
-//        object.setString("Строка");
-//        object.setSimplePojo(new SimplePojo("Объект1", 1));
-//        object.setInts(new int[]{1, 2, 3});
-//        object.setStrings(new String[]{"Массив1", "Массив2"});
-//        object.setSimplePojos(new SimplePojo[]{new SimplePojo("Объект1", 1), new SimplePojo("Объект2", 2)});
-//        object.setCollection(Arrays.asList(new SimplePojo("Коллекция1", 1), new SimplePojo("Коллекция2", 2)));
+        object.setInteger(5);
+        object.setString("Строка");
+        object.setSimplePojo(new SimplePojo("Объект1", 1));
+        object.setInts(new int[]{1, 2, 3});
+        object.setStrings(new String[]{"Массив1", "Массив2"});
+        object.setSimplePojos(new SimplePojo[]{new SimplePojo("Объект1", 1), new SimplePojo("Объект2", 2)});
+        object.setCollection(Arrays.asList(new SimplePojo("Коллекция1", 1), new SimplePojo("Коллекция2", 2)));
 
-//        Map<Object, Object> simpleMap = new HashMap<>();
-//        simpleMap.put("Карта1", 1);
-//        simpleMap.put("Карта2", 2);
-//        object.setSimpleMap(simpleMap);
-
-        Map<Object, Object> objectMap = new HashMap<>();
-        objectMap.put("objectMap1", new SimplePojo("PojoInMap1", 1));
-        objectMap.put("objectMap2", new SimplePojo("PojoInMap2", 2));
-        object.setObjectMap(objectMap);
-
+        Map<Object, Object> map = new HashMap<>();
+        map.put("Карта1", 1);
+        map.put("Карта2", 2);
+        object.setMap(map);
 
         JsonObject jsonObject = JsonObjectWriter.toJsonObject(object);
         assertNotNull(jsonObject);
