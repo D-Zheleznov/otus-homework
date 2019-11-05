@@ -34,11 +34,6 @@ public class User extends BaseEntity {
         return super.getId();
     }
 
-    @Override
-    public void setId(Long id) {
-        super.setId(id);
-    }
-
     public String getName() {
         return name;
     }

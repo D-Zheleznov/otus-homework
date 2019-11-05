@@ -35,15 +35,10 @@ public class HibernateTester {
         System.out.println("Пользователь в базе с ID = 1: " + createdUser1);
 
         System.out.println("Поменяем возраст пользователя, улицу и номер телефона");
-        User denis2 = new User("Denis", 27);
-        denis2.setId(1L);
-        AddressDataSet address2 = new AddressDataSet("Арбатская ул.");
-        address2.setId(1L);
-        PhoneDataSet phone2 = new PhoneDataSet("88009999999");
-        phone2.setId(1L);
-        denis2.setAddressDataSet(address2);
-        denis2.setPhoneDataSet(Collections.singletonList(phone2));
-        hibernateManager.update(denis2);
+        createdUser1.setAge(27);
+        createdUser1.getAddressDataSet().setStreet("Арбатская ул.");
+        createdUser1.getPhoneDataSet().stream().findFirst().ifPresent(phoneData -> phoneData.setNumber("88009999999"));
+        hibernateManager.update(createdUser1);
 
         System.out.println("Проверяем что данные пользователя поменялись:");
         createdUser1 = (User) hibernateManager.load(1L, User.class);
