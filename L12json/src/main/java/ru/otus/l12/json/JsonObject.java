@@ -30,7 +30,20 @@ public class JsonObject implements JsonComponent {
 
     @Override
     public String asJsonString() {
-        String components = "{" + this.jsonComponents.stream().map(JsonComponent::asJsonString).collect(joining(",")) + "}";
-        return isNotBlank(objectName) ? "\"" + objectName + "\":" + components : components;
+        StringBuilder json = new StringBuilder();
+        if (isNotBlank(this.objectName))
+            json.append("\"").append(objectName).append("\":");
+
+        if (!this.jsonComponents.isEmpty()) {
+            if (this.jsonComponents.get(0) == null) {
+                return "null";
+            } else if (this.jsonComponents.size() == 1) {
+                json.append(this.jsonComponents.get(0).asJsonString());
+            } else
+                json.append("{").append(this.jsonComponents.stream().map(JsonComponent::asJsonString).collect(joining(","))).append("}");
+        } else
+            json.append("{}");
+
+        return json.toString();
     }
 }
