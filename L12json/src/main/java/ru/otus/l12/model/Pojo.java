@@ -12,8 +12,7 @@ public class Pojo {
     private int[] ints;
     private SimplePojo[] simplePojos;
     private Collection collection;
-    private Map<Object, Object> simpleMap;
-    private Map<Object, Object> objectMap;
+    private Map<Object, Object> map;
 
     public Pojo() {
     }
@@ -74,19 +73,11 @@ public class Pojo {
         this.collection = collection;
     }
 
-    public Map<Object, Object> getSimpleMap() {
-        return simpleMap;
+    public Map<Object, Object> getMap() {
+        return map;
     }
 
-    public void setSimpleMap(Map<Object, Object> simpleMap) {
-        this.simpleMap = simpleMap;
-    }
-
-    public Map<Object, Object> getObjectMap() {
-        return objectMap;
-    }
-
-    public void setObjectMap(Map<Object, Object> objectMap) {
-        this.objectMap = objectMap;
+    public void setMap(Map<Object, Object> map) {
+        this.map = map;
     }
 }
