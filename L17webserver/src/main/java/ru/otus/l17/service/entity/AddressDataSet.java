@@ -7,6 +7,16 @@ public class AddressDataSet extends BaseEntity {
     public AddressDataSet() {
     }
 
+    @Override
+    public Long getId() {
+        return super.getId();
+    }
+
+    @Override
+    public void setId(Long id) {
+        super.setId(id);
+    }
+
     public AddressDataSet(String street) {
         this.street = street;
     }

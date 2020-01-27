@@ -1,16 +1,14 @@
 package ru.otus.l17.service.entity;
 
-import java.util.UUID;
-
 abstract class BaseEntity {
 
-    private UUID id;
+    private Long id;
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

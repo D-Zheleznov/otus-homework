@@ -1,7 +1,6 @@
 package ru.otus.l17.service.entity;
 
 import java.util.Collection;
-import java.util.UUID;
 
 public class User extends BaseEntity {
 
@@ -19,8 +18,13 @@ public class User extends BaseEntity {
     }
 
     @Override
-    public UUID getId() {
+    public Long getId() {
         return super.getId();
+    }
+
+    @Override
+    public void setId(Long id) {
+        super.setId(id);
     }
 
     public String getName() {

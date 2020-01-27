@@ -7,6 +7,16 @@ public class PhoneDataSet extends BaseEntity {
     public PhoneDataSet() {
     }
 
+    @Override
+    public Long getId() {
+        return super.getId();
+    }
+
+    @Override
+    public void setId(Long id) {
+        super.setId(id);
+    }
+
     public PhoneDataSet(String number) {
         this.number = number;
     }
