@@ -1,23 +1,30 @@
 package ru.otus.l18.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import ru.otus.l18.model.User;
 import ru.otus.l18.service.UserService;
 
 import java.util.List;
 
-@RestController(value = "/L18-Ioc")
+@Controller
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping(value = "/")
+    public ModelAndView getStartPage() {
+        return new ModelAndView("index");
+    }
 
     @GetMapping(value = "/user-browser")
     public ModelAndView getUserBrowser() {
@@ -39,6 +46,6 @@ public class UserController {
             return new ModelAndView("user-editor", model);
         }
         userService.saveUser(user);
-        return getUserBrowser();
+        return new ModelAndView("redirect:/user-browser");
     }
 }
