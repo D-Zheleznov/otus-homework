@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Browser</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col text-left">
+            <h1>Список пользователей</h1>
+        </div>
+        <div class="col text-right mt-2">
+            <form action="#" th:action="@{/user-editor}" method="get">
+                <button type="submit" class="btn btn-primary">Добавить пользователя</button>
+            </form>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Имя</th>
+            <th scope="col">Возраст</th>
+            <th scope="col">Адрес</th>
+            <th scope="col">Телефоны</th>
+        </tr>
+        </thead>
+        <tr th:each="user : ${users}">
+            <td th:utext="${user.name}"></td>
+            <td th:utext="${user.age}"></td>
+            <td th:utext="${user.addressDataSet}"></td>
+            <td th:utext="${user.phoneDataSet}"></td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>
